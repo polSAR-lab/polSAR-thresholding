@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 filename='Radsat_sanfransico_part.mat'
 k=int(input("请输入要分割的类别: "))
-mat1 = h5py.File(f'D:\\code_seg\\input_data\\radar_sanfransico_part\\{filename}', 'r')
-if k == 3:
+mat1 = h5py.File(f'input_data\\radar_sanfransico_part\\{filename}', 'r')
+if k != 2:
     X0,data,Para1,Para2,thres_pv,thres_pd=compare_thresh_seg_fun.newthres(mat1,filename)
 if k == 2:
     X0, data, Para1, Para2=compare_thresh_seg_fun.newthres2(mat1,filename)

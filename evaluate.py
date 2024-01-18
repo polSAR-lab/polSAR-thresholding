@@ -2,8 +2,8 @@ import compare_thresh_seg_fun
 import h5py
 
 filename='Radsat_sanfransico_part.mat'
-mat1 = h5py.File(f'D:\\code_seg\\input_data\\radar_sanfransico_part\\{filename}', 'r')
-mat2 = h5py.File(f'D:\\code_seg\\input_data\\radar_sanfransico_part\\wishart_seg.mat','r')
+mat1 = h5py.File(f'input_data\\radar_sanfransico_part\\{filename}', 'r')
+mat2 = h5py.File(f'input_data\\radar_sanfransico_part\\wishart_seg.mat','r')
 X1=compare_thresh_seg_fun.afterprocess(mat2)
 img1, img2 = compare_thresh_seg_fun.preprocess(mat1)
 index=[]
