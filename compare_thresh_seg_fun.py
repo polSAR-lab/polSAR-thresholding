@@ -8,11 +8,22 @@ import time
 from scipy.stats import gamma
 from config import win,level,L,factor0, min_factor1,min_factor2,nWindow,thres_type,pfa
 
-
-def preprocess(mat1):
-    data1 = mat1.get('input_data')
-    data1 = np.array(data1)
-    input_data = np.transpose(data1)
+def preprocessSAR(input_data):
+    Pv=input_data
+    Pd=input_data
+    data = input_data
+    Para1 = Pv
+    Para2 = Pd
+    mask_Pd_neg = Para2 < 0
+    Para2[mask_Pd_neg] = 0
+    mask_Pd_pos = Para2 > np.max(data)
+    Para2[mask_Pd_pos] = np.max(data.real)
+    img1 = f_SAR_visualize_yip(Para1, 'meanshift', 1, None)
+    img1 = np.round(255 * img1.real).astype(np.uint8)
+    img2 = f_SAR_visualize_yip(Para2, 'meanshift', 1, None)
+    img2 = np.round(255 * img2.real).astype(np.uint8)
+    return img1, img2
+def preprocess(input_data):
     input_data = input_data['real'] + input_data['imag'] * 1j
 
     temp = np.ones((win, win)) / win / win
@@ -552,20 +563,16 @@ def likelihood_ratio_single_Pd(Para2, thres, seg_Pv):
     return pratio
 
 
-def newthres(mat, filename):
+def newthres(input_data, filename):
     if 'terrasar' in filename:
         max_factor1 = 30
         max_factor2 = 30
     else:
         max_factor1 = 20
         max_factor2 = 20
-    data1 = mat.get('input_data')
-    data1 = np.array(data1)
-    input_data = np.transpose(data1)
-    input_data = input_data['real']
+
     xsize = input_data.shape[0]
     ysize = input_data.shape[1]
-    win = 5
     temp = np.ones((win, win)) / win / win
     output_data = np.zeros_like(input_data)
     for channel in range(3):
@@ -643,29 +650,21 @@ def newthres(mat, filename):
     X0 = 2 * np.ones((xsize, ysize))
     X0[seg_Pv] = 1
     X0[seg_Pd] = 3
-    return X0, data, Para1, Para2, thres_pv, thres_pd
+    return seg_Pv,seg_Pd,X0, data, Para1, Para2, thres_pv, thres_pd
 
-def newthres2(mat, filename):
+
+def newthresSAR(input_data, filename):
     if 'terrasar' in filename:
         max_factor1 = 30
         max_factor2 = 30
     else:
         max_factor1 = 20
         max_factor2 = 20
-    data1 = mat.get('input_data')
-    data1 = np.array(data1)
-    input_data = np.transpose(data1)
-    input_data = input_data['real']
     xsize = input_data.shape[0]
     ysize = input_data.shape[1]
-    win = 5
-    temp = np.ones((win, win)) / win / win
-    output_data = np.zeros_like(input_data)
-    for channel in range(3):
-        output_data[:, :, channel, channel] = convolve2d(input_data[:, :, channel, channel], temp, mode='same',
-                                                         boundary='symm')
-    Ps, Pd, Pv = freeman_decom_T(output_data)
-    data = input_data[:, :, 0, 0] + input_data[:, :, 1, 1] + input_data[:, :, 2, 2]
+    Pd= input_data
+    Pv = input_data
+    data = input_data
     Para1 = Pv
     Para2 = Pd
     mask_Pd_neg = Para2 < 0
@@ -702,7 +701,38 @@ def newthres2(mat, filename):
     else:
         thres_pv = 0.02
     seg_Pv = Para1 < thres_pv
+    image_avg2, image_var2 = var_parallel2(Para2, nWindow)
+    image_select2 = image_avg2[rwin + 1:-rwin, rwin + 1:-rwin]
+    val2, idx2 = np.max(image_select2), np.argmax(image_select2)
+    i2, j2 = np.unravel_index(idx2, image_select2.shape)
+    Sample_box2 = [j2, i2, nWindow, nWindow]
+    smask2 = np.zeros((xsize, ysize), dtype=bool)
+    smask2[i2:i2 + nWindow, j2:j2 + nWindow] = 1
+    smean2 = np.mean(Para2[smask2])
+    if thres_type == 4:
+        thres_pd = smean2 / (10 ** (min_factor2 / 10))
+        pratio2 = likelihood_ratio_single_Pd(Para2, thres_pd, seg_Pv)
+        for factor2 in range(min_factor2 + 1, max_factor2 + 1):
+            tthres_pd = smean2 / (10 ** (factor2 / 10))
+            pratio_temp2 = likelihood_ratio_single_Pd(Para2, tthres_pd, seg_Pv)
+            if pratio_temp2 < pratio2:
+                break
+            else:
+                pratio2 = pratio_temp2
+                thres_pd = tthres_pd
+    elif thres_type == 3:
+        thres_pd = gamma_thres(Para2[smask2], pfa)
+        pdf_fitting_single(Para2, smask2)
+    elif thres_type == 2:
+        thres_pd = thres_deter(Para2, smask2, pfa)
+    elif thres_type == 1:
+        thres_pd = factor0 * smean2
+    else:
+        thres_pd = 0.02
+    seg_Pd = Para2 > thres_pd
+    seg_Pd = seg_Pd & (~seg_Pv)
 
-    X0 = seg_Pv
-
-    return X0, data, Para1, Para2
+    X0 = 2 * np.ones((xsize, ysize))
+    X0[seg_Pv] = 1
+    X0[seg_Pd] = 3
+    return seg_Pv,seg_Pd,X0, data, Para1, Para2, thres_pv, thres_pd
