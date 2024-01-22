@@ -4,12 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 filename='radar_sanfransico_part'
-k=input("Please enter the category to be segmented: ")
-if k == '':
+if len(sys.argv) != 2:
     k = 3
-    print("No valid input, default 3")
+    print("No valid category input, default 3")
 else:
-    k = int(k)
+    k = int(sys.argv[1])
 mat1 = h5py.File(f'input_data\\{filename}\\{filename}.mat', 'r')
 data1 = mat1.get('input_data')
 data1 = np.array(data1)
