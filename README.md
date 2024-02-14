@@ -3,8 +3,7 @@
 
 Created by Chun Liu, Sutong Wang, and Jian Yang
 
-The method utilizes volume scattering power and double-bounce scattering power to obtain high and low thresholds for segmentation by taking advantage of low volume scattering power and high double-bounce scattering power. A sample window region is filtered over the volume scattering and double-bounce scattering power and a threshold search interval is determined based on the average power of the sample region. Then, the optimal threshold is obtained based on the likelihood ratio.
-
+This method utilizes volume scattering power and double-bounce scattering power sampling to obtain the optimal threshold based on likelihood ratio.
 
 The experimental results in the paper were obtained from __Matlab code__. The Python version code is publicly available here, and the Matlab code will also be released after it is sorted out.
 
