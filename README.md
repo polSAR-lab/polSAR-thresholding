@@ -13,6 +13,7 @@ The experimental results in the paper were obtained from __Matlab code__. The Py
 ## News
 - **2024-01-18** Our proposed threshold segmentation method outperforms traditional threshold segmentation methods (mPA>0.8 & mIoU>0.6) on multiple datasets.
 - **2024-01-18** The paper has been submitted.
+- **2024-06-12** The paper has been published on IEEE Xplore.
 
 ## Usage
 
@@ -50,5 +51,16 @@ python evaluate.py
 ## Citation 
 If you find our work useful in your research, please consider citing: 
 ```
+@ARTICLE{10543127,
+  author={Liu, Chun and Wang, Sutong and Yang, Jian},
+  journal={IEEE Geoscience and Remote Sensing Letters}, 
+  title={Thresholding of Polarimetric SAR Images of Coastal Zones Based on Three-Component Decomposition and Likelihood Ratio}, 
+  year={2024},
+  volume={21},
+  number={},
+  pages={1-5},
+  keywords={Scattering;Image segmentation;Histograms;Sea measurements;Radar polarimetry;Land surface;Entropy;Coastal zone;likelihood ratio;polarimetric SAR;three-component decomposition;thresholding},
+  doi={10.1109/LGRS.2024.3407848}
+  }
 
 ```
